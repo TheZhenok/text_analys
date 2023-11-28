@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  # nginx:
+  #   image: nginx:1.23-alpine
+  #   networks:
+  #   - profile-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    networks:
+    - profile-network
+
+  db:
+    image: "postgres:14"
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+      - POSTGRES_USER=postgre
+      - POSTGRES_DB=ukassa
+    volumes:
+      - pgdata_text:/var/lib/postgresql/data
+    ports:
+      - "5444:5444"
+    expose:
+      - "5444"
+    networks:
+      - profile-network
+
+  backend:
+    container_name: text-backend
+    command: tail -F /dev/null
+    build: .
+    networks:
+    - profile-network
+    depends_on:
+    - db
+    volumes:
+      - ".:/usr/src/backend/"
+
+  cache:
+    image: redis:7.0-alpine
+    networks:
+    - profile-network
+
+  # frontend:
+  #   build:
+  #     context: ..
+  #     dockerfile: ./deploy/Dockerfile.frontend
+  #   networks:
+  #   - profile-network
+  #   - kong-network
+
+volumes:
+  profile_pg_storage:
+  pgdata_text:
+
+networks:
+  profile-network:
